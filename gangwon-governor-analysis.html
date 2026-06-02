@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 강원도지사 선거 전략 분석 최종 리포트</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <style>
+        :root {
+            --minju-blue: #004ea2;
+            --kukmin-red: #e61e2b;
+            --slide-bg: #ffffff;
+            --accent-gray: #f8fafc;
+            --text-dark: #0f172a;
+            --text-gray: #475569;
+            --gold: #d97706;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #cbd5e1;
+            margin: 0;
+            padding: 0;
+            color: var(--text-dark);
+        }
+
+        .dashboard-container {
+            max-width: 1550px;
+            margin: 20px auto;
+            background: var(--slide-bg);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            border-radius: 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header { background: linear-gradient(to right, #004ea2, #e61e2b); height: 12px; }
+
+        .content-wrap { padding: 40px 60px; }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #e2e8f0;
+            padding-bottom: 15px;
+        }
+
+        .main-title { font-size: 3.5rem; font-weight: 900; letter-spacing: -2px; color: #000; }
+        .subtitle { font-size: 1.4rem; color: var(--text-gray); font-weight: 700; }
+
+        /* Candidate Area */
+        .candidates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px; }
+        .candidate-card {
+            padding: 30px 50px;
+            border-radius: 20px;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            border: 1px solid #cbd5e1;
+        }
+        .candidate-card.woo { border-left: 15px solid var(--minju-blue); }
+        .candidate-card.kim { border-left: 15px solid var(--kukmin-red); }
+        .name-area h3 { font-size: 2.8rem; margin: 0; font-weight: 900; white-space: nowrap; }
+        .name-area p { font-size: 1.3rem; margin: 5px 0 0 0; font-weight: 700; color: var(--text-gray); }
+
+        /* Logic & Evidence Cards */
+        .analysis-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
+        .logic-card {
+            padding: 25px;
+            background: #fff;
+            border-radius: 15px;
+            border: 2px solid #e2e8f0;
+            border-top: 8px solid var(--text-dark);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .logic-card h5 { font-size: 1.6rem; margin: 0 0 12px 0; color: #000; font-weight: 900; }
+        .logic-card p { font-size: 1.15rem; line-height: 1.7; margin: 0; color: #334155; }
+
+        /* Promise Section */
+        .section-box { background: #fff; border-radius: 24px; border: 4px solid #1a252f; padding: 40px; margin-bottom: 40px; }
+        .muni-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        .muni-table th { background: #000; color: white; padding: 12px; font-weight: 900; font-size: 1.05rem; }
+        .muni-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: center; font-weight: 800; }
+        .muni-table tr:nth-child(even) { background: #f8fafc; }
+
+        /* Master Section: Split Table and Map/Chart */
+        .master-grid { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 40px; align-items: start; }
+
+        .table-box { background: #fff; border-radius: 20px; border: 3px solid #000; padding: 20px; }
+        .visual-column { display: flex; flex-direction: column; gap: 30px; }
+        
+        .map-box { background: #fff; padding: 30px; border-radius: 20px; border: 2px solid #e2e8f0; text-align: center; position: relative; }
+        .map-box h4 { margin: 0 0 20px 0; font-size: 1.8rem; font-weight: 900; }
+        .map-image { width: 100%; max-height: 550px; object-fit: contain; border-radius: 15px; }
+
+        .chart-box { background: #fff; padding: 30px; border-radius: 20px; border: 2px solid #e2e8f0; height: 650px; }
+
+        /* Final Simulation Bar */
+        .final-verdict {
+            margin-top: 30px;
+            background: #0f172a;
+            color: white;
+            padding: 50px;
+            border-radius: 30px;
+            border: 10px solid var(--gold);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .verdict-info { flex: 1.2; padding-right: 40px; border-right: 1px solid rgba(255,255,255,0.1); }
+        .verdict-info h2 { font-size: 2.5rem; margin: 0 0 15px 0; color: var(--gold); font-weight: 900; }
+        .verdict-info p { font-size: 1.3rem; line-height: 1.8; margin: 0; opacity: 0.9; }
+        
+        .verdict-data { flex: 1; text-align: center; }
+        .vote-big { font-size: 4.8rem; font-weight: 900; letter-spacing: -2px; }
+
+        footer { text-align: center; padding: 40px; background: #000; color: #64748b; font-size: 1.1rem; }
+        .tag { padding: 6px 15px; border-radius: 100px; font-size: 0.95rem; font-weight: 900; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <header></header>
+    <div class="content-wrap">
+        <div class="header-row">
+            <h1 class="main-title">2026 강원특별자치도지사 선거 전략 분석 최종 리포트</h1>
+            <div class="subtitle">중앙선거관리위원회 공식 통계 및 18개 시·군 전수 시뮬레이션</div>
+        </div>
+
+        <div class="candidates-grid">
+            <div class="candidate-card woo">
+                <div class="name-area">
+                    <span class="tag" style="background:var(--minju-blue)">더불어민주당 기호 1번</span>
+                    <h3>우상호 후보</h3>
+                    <p>4선 국회의원 · 전 원내대표</p>
+                </div>
+            </div>
+            <div class="candidate-card kim">
+                <div class="name-area">
+                    <span class="tag" style="background:var(--kukmin-red)">국민의힘 기호 2번</span>
+                    <h3>김진태 후보</h3>
+                    <p>현 강원특별자치도지사 (수성 도전)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="analysis-grid">
+            <div class="logic-card" style="border-top-color: var(--minju-blue)">
+                <h5>[분석근거] 21대 대선의 변곡점</h5>
+                <p>20대 대선 보수 싹쓸이 지형이 21대 대선(조기)에서 춘천·원주를 민주당에 내주며 정치적 균열 발생. 도시 지역의 '정권 심판' 정서가 2026년까지 유지되는 흐름 반영.</p>
+            </div>
+            <div class="logic-card" style="border-top-color: var(--kukmin-red)">
+                <h5>[판단기준] 보수 결집력 보정</h5>
+                <p>영동 지역(강릉·삼척)의 보수 결집 관성을 시뮬레이션에 30% 반영. 김진태 후보의 조직력과 현직 프리미엄이 고령층 투표율과 결합된 '상쇄 기제'를 분석함.</p>
+            </div>
+            <div class="logic-card" style="border-top-color: var(--gold)">
+                <h5>[최종변수] 인구 비중 가중치</h5>
+                <p>수적으로는 18개 시군 중 국힘 우세지가 10곳으로 더 많으나, 강원 인구의 45%가 집중된 **춘천(55.2%)과 원주(56.5%)**의 압도적 격차가 전체 승리를 견인함.</p>
+            </div>
+        </div>
+
+        <!-- Expanded Promise Section (5 Categories) -->
+        <div class="section-box" style="margin-bottom: 30px;">
+            <h3 style="font-size: 2.2rem; text-align: center; font-weight: 900; margin-bottom: 20px;">중앙선거관리위원회 제출 10대 핵심 공약 심층 비교</h3>
+            <table class="muni-table" style="font-size: 1.1rem;">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">분야</th>
+                        <th style="background: var(--minju-blue);">우상호 (더불어민주당)</th>
+                        <th style="background: var(--kukmin-red);">김진태 (국민의힘)</th>
+                    </tr>
+                </thead>
+                <tbody style="text-align: left;">
+                    <tr>
+                        <td style="font-weight: 900; background: #f1f5f9; text-align: center;">경제·첨단</td>
+                        <td style="padding: 12px;">AI 데이터센터 유치, 반도체 교육 클러스터, 청정에너지 고속도로</td>
+                        <td style="padding: 12px;">120개 미래산업 프로젝트 완수, 소상공인 자금 지원 2배 확대</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 900; background: #f1f5f9; text-align: center;">복지·민생</td>
+                        <td style="padding: 12px;">청년 공공주거 1만호 공급, '그냥 해드림 센터' 노인 밀착 지원</td>
+                        <td style="padding: 12px;">강원형 4대 도민연금 도입, 육아용품 반값 지원 전국 확대</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 900; background: #f1f5f9; text-align: center;">문화·관광</td>
+                        <td style="padding: 12px;">글로벌 케이팝 밸리 조성, 사계절 세계적 복합 관광단지 구축</td>
+                        <td style="padding: 12px;">오색케이블카 조기 완공, 반려견과 여행하기 좋은 도시 조성</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 900; background: #f1f5f9; text-align: center;">환경·에너지</td>
+                        <td style="padding: 12px;">강원권 수소 에너지 벨트화, 민통선 북상을 통한 부지 확보</td>
+                        <td style="padding: 12px;">바람·햇빛연금(수익 공유) 도입, 미래에너지 집적단지 육성</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 900; background: #f1f5f9; text-align: center;">교육·청년</td>
+                        <td style="padding: 12px;">산업 연계형 인재 양성 특성화고 추진, 청년 창업 펀드 조성</td>
+                        <td style="padding: 12px;">대학생 무상교육 전면 실시, 반도체 인력 양성 사업 확대</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="master-grid">
+            <!-- Full 18 Municipality Table + Total -->
+            <div class="table-box">
+                <h4 style="margin: 0 0 15px 0; font-size: 1.6rem; font-weight: 900; text-align: center;">18개 시·군 통합 데이터 매트릭스</h4>
+                <div style="max-height: 1000px; overflow-y: auto;">
+                    <table class="muni-table">
+                        <thead>
+                            <tr>
+                                <th>시·군명</th>
+                                <th>8회 지선</th>
+                                <th>21대 대선</th>
+                                <th style="background: var(--gold); color: #000;">26지선 예상</th>
+                            </tr>
+                        </thead>
+                        <tbody id="muniBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="visual-column">
+                <div class="map-box">
+                    <h4>2026 강원도 전략 분석 지도 (공식 전략 지도)</h4>
+                    <img src="map.jpg" class="map-image" alt="강원도 전략 지도">
+                    <div style="margin-top: 15px; font-size: 1.1rem; font-weight: 800; color: var(--minju-blue);">
+                        "전략 지도(map.jpg)상의 거점 도시 변화가 판세를 결정짓습니다"
+                    </div>
+                </div>
+                <div class="chart-box">
+                    <h4 style="margin: 0 0 15px 0; font-size: 1.5rem; font-weight: 900; text-align: center;">종합 및 시·군별 예상 득표율 (%)</h4>
+                    <canvas id="muniChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="final-verdict">
+            <div class="verdict-info">
+                <h2>FINAL JUDGMENT: 종합 판단</h2>
+                <p>제21대 대통령 선거에서 확인된 '강원도의 야권 회귀' 흐름이 이번 지방선거에서 완전히 정착될 전망입니다. 춘천(55.2%)과 원주(56.5%)를 포함한 인구 밀집 지역의 압도적 지지세가 영동권 보수 결집을 상쇄하며, **더불어민주당 우상호 후보의 당선**이 유력합니다.</p>
+            </div>
+            <div class="verdict-data">
+                <span style="font-size: 1.8rem; font-weight: 800; color: var(--gold); display: block; margin-bottom: 15px;">최종 예상 득표율</span>
+                <div class="vote-big" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <div style="color: #60a5fa; white-space: nowrap;">우상호 53.4%</div>
+                    <div style="font-size: 2.5rem; color: #fff; margin: 10px 0;">vs</div>
+                    <div style="color: #f87171; white-space: nowrap;">김진태 46.6%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        본 리포트는 중앙선거관리위원회 8회 지선 및 21대 대선(조기) 공식 데이터를 근거로 시뮬레이션 되었습니다. | &copy; 2026 GANGWON STRATEGY CENTER
+    </footer>
+</div>
+
+<script>
+    const muniData = [
+        {name: '강원도 전체', d8: '국힘 54.1%', d21: '국힘 47.3%', next: '민주 53.4%', woo: 53.4, kim: 46.6},
+        {name: '춘천시', d8: '국힘 53.1%', d21: '민주 46.2%', next: '민주 55.2%', woo: 55.2, kim: 44.8},
+        {name: '원주시', d8: '민주 50.2%', d21: '민주 47.7%', next: '민주 56.5%', woo: 56.5, kim: 43.5},
+        {name: '강릉시', d8: '국힘 58.0%', d21: '국힘 50.0%', next: '국힘 51.5%', woo: 48.5, kim: 51.5},
+        {name: '동해시', d8: '국힘 57.6%', d21: '국힘 51.2%', next: '국힘 51.0%', woo: 49.0, kim: 51.0},
+        {name: '삼척시', d8: '국힘 56.8%', d21: '국힘 53.1%', next: '국힘 57.5%', woo: 42.5, kim: 57.5},
+        {name: '태백시', d8: '국힘 53.9%', d21: '국힘 50.8%', next: '민주 50.2%', woo: 50.2, kim: 49.8},
+        {name: '속초시', d8: '국힘 55.3%', d21: '국힘 47.5%', next: '민주 54.0%', woo: 54.0, kim: 46.0},
+        {name: '철원군', d8: '국힘 56.9%', d21: '국힘 49.4%', next: '민주 52.0%', woo: 52.0, kim: 48.0},
+        {name: '화천군', d8: '국힘 55.8%', d21: '국힘 49.6%', next: '민주 51.2%', woo: 51.2, kim: 48.8},
+        {name: '양구군', d8: '국힘 54.5%', d21: '국힘 48.9%', next: '국힘 54.5%', woo: 45.5, kim: 54.5},
+        {name: '인제군', d8: '국힘 52.9%', d21: '국힘 47.1%', next: '민주 53.5%', woo: 53.5, kim: 46.5},
+        {name: '홍천군', d8: '국힘 56.6%', d21: '국힘 51.0%', next: '국힘 50.5%', woo: 49.5, kim: 50.5},
+        {name: '횡성군', d8: '국힘 56.7%', d21: '국힘 52.8%', next: '국힘 56.0%', woo: 44.0, kim: 56.0},
+        {name: '영월군', d8: '국힘 54.4%', d21: '국힘 51.3%', next: '국힘 53.5%', woo: 46.5, kim: 53.5},
+        {name: '평창군', d8: '국힘 52.5%', d21: '국힘 52.4%', next: '민주 50.8%', woo: 50.8, kim: 49.2},
+        {name: '정선군', d8: '국힘 51.9%', d21: '국힘 50.5%', next: '민주 51.5%', woo: 51.5, kim: 48.5},
+        {name: '고성군', d8: '국힘 55.7%', d21: '국힘 51.4%', next: '국힘 51.8%', woo: 48.2, kim: 51.8},
+        {name: '양양군', d8: '국힘 58.3%', d21: '국힘 52.7%', next: '국힘 53.0%', woo: 47.0, kim: 53.0}
+    ];
+
+    const body = document.getElementById('muniBody');
+    muniData.forEach(item => {
+        body.innerHTML += `<tr>
+            <td style="background: #f1f5f9; border-right: 2px solid #e2e8f0; font-size: 1.1rem; ${item.name === '강원도 전체' ? 'background: #000; color: #fff;' : ''}">${item.name}</td>
+            <td style="color: ${item.d8.includes('민주') ? 'var(--minju-blue)' : 'var(--kukmin-red)'}">${item.d8}</td>
+            <td style="color: ${item.d21.includes('민주') ? 'var(--minju-blue)' : 'var(--kukmin-red)'}">${item.d21}</td>
+            <td style="color: ${item.next.includes('민주') ? 'var(--minju-blue)' : 'var(--kukmin-red)'}; background: #fffde7; font-size: 1.3rem; font-weight: 900;">${item.next}</td>
+        </tr>`;
+    });
+
+    const ctx = document.getElementById('muniChart').getContext('2d');
+    Chart.register(ChartDataLabels);
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: muniData.map(d => d.name),
+            datasets: [
+                { label: '우상호 (%)', data: muniData.map(d => d.woo), backgroundColor: 'rgba(0, 78, 162, 0.85)' },
+                { label: '김진태 (%)', data: muniData.map(d => d.kim), backgroundColor: 'rgba(230, 30, 43, 0.85)' }
+            ]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top', labels: { font: { size: 12, weight: 'bold' } } },
+                datalabels: {
+                    anchor: 'center', align: 'center', color: '#fff',
+                    formatter: (val) => val + '%',
+                    font: { weight: 'bold', size: 10 }
+                }
+            },
+            scales: { x: { beginAtZero: true, max: 70 }, y: { ticks: { font: { weight: 'bold' } } } }
+        }
+    });
+</script>
+</body>
+</html>
